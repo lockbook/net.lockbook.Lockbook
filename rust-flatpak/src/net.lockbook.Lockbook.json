@@ -1,0 +1,15 @@
+{
+    "app-id": "net.lockbook.Lockbook",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "25.08",
+    "sdk": "org.freedesktop.Sdk",
+    "sdk-extensions" : [
+        "org.freedesktop.Sdk.Extension.rust-stable"
+    ],
+    "command": "lockbook",
+    "finish-args": [
+       "--socket=x11",
+       "--device=dri",
+       "--share=network"
+    ]
+}

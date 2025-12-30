@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Comment=The private, polished note-taking platform.
+Terminal=false
+Exec=/home/amumu/.cargo/bin/lockbook-linux
+Name=Lockbook
+Icon=/home/amumu/Documents/lockbook/utils/dev/snap-packages/lockbook-desktop/snap/gui/logo.svg
