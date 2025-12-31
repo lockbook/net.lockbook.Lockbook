@@ -3,13 +3,44 @@
     "runtime": "org.freedesktop.Platform",
     "runtime-version": "25.08",
     "sdk": "org.freedesktop.Sdk",
-    "sdk-extensions" : [
+    "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
+    "build-options": {
+        "append-path": "usr/lib/sdk/rust-stable/bin"
+    },
     "command": "lockbook",
     "finish-args": [
        "--socket=x11",
        "--device=dri",
        "--share=network"
+    ],
+    "modules": [
+        {
+            "name": "lockbook",
+            "buildsystem": "cmake",
+            "build-commands": [
+                "mkdir -p /app/share/icons/hicolor/128x128/apps/",
+                "cp /logo.svg /app/share/icons/hicolor/128x128/apps/net.lockbook.Lockbook.svg",
+                "mkdir -p /app/share/metainfo/",
+                "cp /lockbook-appdata.xml /app/share/metainfo/net.lockbook.Lockbook.appdata.xml",
+                "mkdir -p /app/share/applications",
+                "cp /lockbook-desktop.desktop /app/share/applications/net.lockbook.Lockbook.desktop"
+            ],
+            "sources": [
+                "cargo-sources.json",
+                {
+                    "type": "dir",
+                    "path": "."
+                },
+                {
+                    "type": "shell",
+                    "commands": [
+                        "mkdir -p .cargo",
+                        "cp -vf cargo/config .cargo/config.toml"
+                    ]
+                }
+            ]
+        }
     ]
 }
