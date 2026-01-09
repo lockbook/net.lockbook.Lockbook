@@ -9,7 +9,7 @@
     "build-options": {
         "append-path": "usr/lib/sdk/rust-stable/bin"
     },
-    "command": "lockbook",
+    "command": "lockbook-linux",
     "finish-args": [
        "--socket=x11",
        "--device=dri",
@@ -18,27 +18,20 @@
     "modules": [
         {
             "name": "lockbook",
-            "buildsystem": "cmake",
+            "buildsystem": "simple",
             "build-commands": [
-                "mkdir -p /app/share/icons/hicolor/128x128/apps/",
-                "cp /logo.svg /app/share/icons/hicolor/128x128/apps/net.lockbook.Lockbook.svg",
+                "cp ./assets/logo.svg /app/share/icons/hicolor/scalable/apps/net.lockbook.Lockbook.svg",
                 "mkdir -p /app/share/metainfo/",
-                "cp /lockbook-appdata.xml /app/share/metainfo/net.lockbook.Lockbook.appdata.xml",
+                "cp ./assets/net.lockbook.Lockbook.metainfo.xml /app/share/metainfo/net.lockbook.Lockbook.metainfo.xml",
                 "mkdir -p /app/share/applications",
-                "cp /lockbook-desktop.desktop /app/share/applications/net.lockbook.Lockbook.desktop"
+                "cp ./assets/lockbook-desktop.desktop /app/share/applications/net.lockbook.Lockbook.desktop"
             ],
             "sources": [
-                "cargo-sources.json",
                 {
-                    "type": "dir",
-                    "path": "."
-                },
-                {
-                    "type": "shell",
-                    "commands": [
-                        "mkdir -p .cargo",
-                        "cp -vf cargo/config .cargo/config.toml"
-                    ]
+                    "type": "git",
+                    "url": "https://github.com/lockbook/lockbook/",
+                    "tag": "25.12.15",
+                    "commit": "1dc16ec7e3d6e90178c7dffc603f1d6936f18269"
                 }
             ]
         }
