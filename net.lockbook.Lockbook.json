@@ -37,7 +37,13 @@
                 {
                     "type": "archive",
                     "url": "https://github.com/lockbook/lockbook/archive/refs/tags/26.2.11.tar.gz",
-                    "sha256": "b8e20e9550ef9252053a5c5642b9fc2a0bb193345bd5f538b96325da8d280702"
+                    "sha256": "b8e20e9550ef9252053a5c5642b9fc2a0bb193345bd5f538b96325da8d280702",
+                    "x-checker-data": {
+                        "type": "json",
+                        "url": "https://api.github.com/repos/lockbook/lockbook/releases/latest",
+                        "version-query": ".tag_name",
+                        "url-query": ".tarball_url"
+                    }
                 },
                 "cargo-sources.json"
             ]

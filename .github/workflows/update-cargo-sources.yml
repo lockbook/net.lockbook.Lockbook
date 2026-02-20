@@ -1,0 +1,116 @@
+name: Update Cargo Sources
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+
+jobs:
+  update-cargo-sources:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Flathub repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: |
+          pip3 install aiohttp toml
+          wget https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
+          chmod +x flatpak-cargo-generator.py
+      
+      - name: Get latest lockbook release info
+        id: release
+        run: |
+          RELEASE_INFO=$(curl -s https://api.github.com/repos/lockbook/lockbook/releases/latest)
+          TAG=$(echo "$RELEASE_INFO" | jq -r .tag_name)
+          TARBALL_URL=$(echo "$RELEASE_INFO" | jq -r .tarball_url)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tarball_url=$TARBALL_URL" >> $GITHUB_OUTPUT
+          echo "Latest release: $TAG"
+      
+      - name: Get current version from manifest
+        id: current
+        run: |
+          CURRENT_VERSION=$(jq -r '.modules[0].sources[0].url' net.lockbook.Lockbook.json | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version in manifest: $CURRENT_VERSION"
+      
+      - name: Check if update is needed
+        id: check
+        run: |
+          if [ "${{ steps.current.outputs.version }}" = "${{ steps.release.outputs.tag }}" ]; then
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "No update needed - already at latest version"
+          else
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "Update needed: ${{ steps.current.outputs.version }} -> ${{ steps.release.outputs.tag }}"
+          fi
+      
+      - name: Download and extract lockbook source
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          wget -O lockbook.tar.gz "${{ steps.release.outputs.tarball_url }}"
+          mkdir lockbook-source
+          tar xzf lockbook.tar.gz -C lockbook-source --strip-components=1
+      
+      - name: Generate new cargo-sources.json
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          cd lockbook-source
+          ../flatpak-cargo-generator.py ./Cargo.lock -o ../cargo-sources.json
+          cd ..
+          echo "Generated new cargo-sources.json with $(jq '. | length' cargo-sources.json) dependencies"
+      
+      - name: Calculate checksums for new tarball
+        if: steps.check.outputs.needs_update == 'true'
+        id: checksums
+        run: |
+          SHA256=$(sha256sum lockbook.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "New tarball SHA256: $SHA256"
+      
+      - name: Update manifest with new version
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          # Update the archive source in the manifest
+          jq --arg url "${{ steps.release.outputs.tarball_url }}" \
+             --arg sha256 "${{ steps.checksums.outputs.sha256 }}" \
+             '.modules[0].sources[0].url = $url | .modules[0].sources[0].sha256 = $sha256' \
+             net.lockbook.Lockbook.json > net.lockbook.Lockbook.json.tmp
+          mv net.lockbook.Lockbook.json.tmp net.lockbook.Lockbook.json
+          echo "Updated manifest to version ${{ steps.release.outputs.tag }}"
+      
+      - name: Create Pull Request
+        if: steps.check.outputs.needs_update == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update to lockbook ${{ steps.release.outputs.tag }}"
+          title: "Update to lockbook ${{ steps.release.outputs.tag }}"
+          body: |
+            ## Automated Update
+            
+            This PR updates lockbook to version **${{ steps.release.outputs.tag }}**.
+            
+            ### Changes:
+            - Updated lockbook source tarball
+            - Regenerated `cargo-sources.json` with latest Rust dependencies
+            - Updated SHA256 checksum: `${{ steps.checksums.outputs.sha256 }}`
+            
+            ### Release Info:
+            - Previous version: ${{ steps.current.outputs.version }}
+            - New version: ${{ steps.release.outputs.tag }}
+            - Tarball URL: ${{ steps.release.outputs.tarball_url }}
+            
+            Please review and merge if the build passes.
+          branch: update-lockbook-${{ steps.release.outputs.tag }}
+          delete-branch: true
+          labels: |
+            automated
+            dependencies
