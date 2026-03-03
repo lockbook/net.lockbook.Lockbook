@@ -1,46 +1,46 @@
 {
-  "app-id": "net.lockbook.Lockbook",
-  "build-options": {
-    "append-path": "/usr/lib/sdk/rust-stable/bin"
-  },
-  "command": "lockbook-desktop",
-  "finish-args": [
-    "--socket=x11",
-    "--device=dri",
-    "--share=network",
-    "--share=ipc"
-  ],
-  "modules": [
-    {
-      "build-commands": [
-        "cargo build --release --offline -p lockbook-linux",
-        "install -Dm755 target/release/lockbook-linux /app/bin/lockbook-desktop",
-        "install -Dm644 docs/graphics/logo.svg /app/share/icons/hicolor/scalable/apps/net.lockbook.Lockbook.svg",
-        "install -Dm644 utils/dev/flatpak-package/lockbook-desktop.desktop /app/share/applications/net.lockbook.Lockbook.desktop",
-        "install -Dm644 utils/dev/flatpak-package/net.lockbook.Lockbook.appdata.xml /app/share/appdata/net.lockbook.Lockbook.appdata.xml",
-        "install -Dm0644 UNLICENSE -t /app/share/licenses/net.lockbook.Lockbook/"
-      ],
-      "build-options": {
-        "env": {
-          "CARGO_HOME": "/run/build/lockbook/cargo"
-        }
-      },
-      "buildsystem": "simple",
-      "name": "lockbook",
-      "sources": [
+    "app-id": "net.lockbook.Lockbook",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "25.08",
+    "sdk": "org.freedesktop.Sdk",
+    "sdk-extensions": [
+        "org.freedesktop.Sdk.Extension.rust-stable"
+    ],
+    "build-options": {
+        "append-path": "/usr/lib/sdk/rust-stable/bin"
+    },
+    "command": "lockbook-desktop",
+    "finish-args": [
+       "--socket=x11",
+       "--device=dri",
+       "--share=network",
+       "--share=ipc"
+    ],
+    "modules": [
         {
-          "sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
-          "type": "archive",
-          "url": "https://github.com/lockbook/lockbook/archive/refs/tags/26.2.23.tar.gz"
-        },
-        "cargo-sources.json"
-      ]
-    }
-  ],
-  "runtime": "org.freedesktop.Platform",
-  "runtime-version": "25.08",
-  "sdk": "org.freedesktop.Sdk",
-  "sdk-extensions": [
-    "org.freedesktop.Sdk.Extension.rust-stable"
-  ]
+            "name": "lockbook",
+            "buildsystem": "simple",
+            "build-options": {
+                "env": {
+                    "CARGO_HOME": "/run/build/lockbook/cargo"
+                }
+            },
+            "build-commands": [
+                "cargo build --release --offline -p lockbook-linux",
+                "install -Dm755 target/release/lockbook-linux /app/bin/lockbook-desktop",
+                "install -Dm644 docs/graphics/logo.svg /app/share/icons/hicolor/scalable/apps/net.lockbook.Lockbook.svg",
+                "install -Dm644 utils/dev/flatpak-package/lockbook-desktop.desktop /app/share/applications/net.lockbook.Lockbook.desktop",
+                "install -Dm644 utils/dev/flatpak-package/net.lockbook.Lockbook.appdata.xml /app/share/appdata/net.lockbook.Lockbook.appdata.xml",
+                "install -Dm0644 UNLICENSE -t /app/share/licenses/net.lockbook.Lockbook/"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/lockbook/lockbook/archive/refs/tags/26.2.11.tar.gz",
+                    "sha256": "b8e20e9550ef9252053a5c5642b9fc2a0bb193345bd5f538b96325da8d280702"
+                },
+                "cargo-sources.json"
+            ]
+        }
+    ]
 }
