@@ -1,3 +1,5 @@
+now over here: https://github.com/flathub/net.lockbook.Lockbook
+
 ### How to test the package
 
 #### Prerequisites
